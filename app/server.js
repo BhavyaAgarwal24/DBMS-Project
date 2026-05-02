@@ -7,8 +7,29 @@ const PORT = 3000;
 
 let db;
 
+async function getDb() {
+  if (!db) {
+    db = await initializeDatabase();
+  }
+  return db;
+}
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(async (req, res, next) => {
+  if (!req.path.startsWith('/api/')) {
+    next();
+    return;
+  }
+
+  try {
+    await getDb();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: `Database connection failed: ${error.message}` });
+  }
+});
 
 function isSafeIdentifier(value) {
   return /^[A-Za-z_][A-Za-z0-9_]*$/.test(value);
@@ -376,7 +397,7 @@ app.get('*', (req, res) => {
 
 async function start() {
   try {
-    db = await initializeDatabase();
+    await getDb();
     console.log(`Database connected to MySQL schema "${DB_CONFIG.database}".`);
     app.listen(PORT, () => {
       console.log(`Pollution Monitoring System running at http://localhost:${PORT}`);
@@ -387,4 +408,8 @@ async function start() {
   }
 }
 
-start();
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;

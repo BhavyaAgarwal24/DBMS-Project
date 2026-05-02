@@ -671,8 +671,26 @@ async function runSQL() {
 // UTILITIES
 // ═══════════════════════════════════════════════════════════
 async function fetchJSON(url, opts = {}) {
-  try { const res = await fetch(url, opts); return await res.json(); }
-  catch (err) { toast(err.message,'error'); return { error:err.message }; }
+  try {
+    const res = await fetch(url, opts);
+    const contentType = res.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      return await res.json();
+    }
+
+    const body = await res.text();
+    const compactBody = body.replace(/\s+/g, ' ').trim();
+    const isHtml = compactBody.startsWith('<!DOCTYPE') || compactBody.startsWith('<html') || compactBody.startsWith('<');
+    const message = isHtml
+      ? `Server returned HTML for ${url}. Check Vercel routing and API deployment.`
+      : `Unexpected response from ${url}: ${compactBody.slice(0, 120)}`;
+
+    throw new Error(message);
+  } catch (err) {
+    toast(err.message,'error');
+    return { error:err.message };
+  }
 }
 
 function esc(str) {
