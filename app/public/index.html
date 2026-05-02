@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pollution Monitoring System — DBMS Project</title>
+  <meta name="description" content="Industrial Pollution Monitoring System demonstrating 3-Tier Architecture with Admin and User portals." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    document.documentElement.dataset.theme = localStorage.getItem('pollution-theme') || 'light';
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- LOGIN SCREEN                                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="login-screen" id="login-screen">
+    <div class="login-bg"></div>
+    <div class="login-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-icon">🏭</div>
+          <h1>PollutionDB</h1>
+          <p>Industrial Pollution Monitoring System</p>
+        </div>
+        <form class="login-form" id="login-form">
+          <div class="login-field">
+            <label>Username</label>
+            <input type="text" id="login-username" placeholder="Enter username" autocomplete="off" required />
+          </div>
+          <div class="login-field">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" required />
+          </div>
+          <button type="submit" class="btn btn-primary login-btn" id="login-btn">Sign In</button>
+          <div class="login-error" id="login-error"></div>
+        </form>
+        <div class="login-hint">
+          <div class="hint-title">Demo Credentials</div>
+          <div class="hint-grid">
+            <div class="hint-item" data-user="admin" data-pass="admin123">
+              <span class="hint-role admin">Admin</span>
+              <span>admin / admin123</span>
+            </div>
+            <div class="hint-item" data-user="inspector1" data-pass="inspect123">
+              <span class="hint-role inspector">Inspector</span>
+              <span>inspector1 / inspect123</span>
+            </div>
+            <div class="hint-item" data-user="teacher" data-pass="teacher123">
+              <span class="hint-role teacher">Teacher</span>
+              <span>teacher / teacher123</span>
+            </div>
+            <div class="hint-item" data-user="user1" data-pass="user123">
+              <span class="hint-role user">User</span>
+              <span>user1 / user123</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Tier Architecture Card -->
+      <div class="arch-card">
+        <h2>Three-Tier Architecture</h2>
+        <p class="arch-subtitle">This application demonstrates the classic 3-tier DBMS architecture</p>
+        <div class="arch-tiers">
+          <div class="arch-tier tier-1">
+            <div class="tier-number">Tier 1</div>
+            <div class="tier-icon">🖥️</div>
+            <h3>Presentation Layer</h3>
+            <p>The frontend user interface built with HTML, CSS, and JavaScript. Provides Admin and User portals with role-based views.</p>
+            <div class="tier-tech">HTML &bull; CSS &bull; JavaScript</div>
+          </div>
+          <div class="arch-arrow">⬇ HTTP Requests / JSON Responses ⬇</div>
+          <div class="arch-tier tier-2">
+            <div class="tier-number">Tier 2</div>
+            <div class="tier-icon">⚙️</div>
+            <h3>Application Layer</h3>
+            <p>The backend server handles business logic, authentication, role-based access control, and API routing.</p>
+            <div class="tier-tech">Node.js &bull; Express.js &bull; REST API</div>
+          </div>
+          <div class="arch-arrow">⬇ SQL Queries / Result Sets ⬇</div>
+          <div class="arch-tier tier-3">
+            <div class="tier-number">Tier 3</div>
+            <div class="tier-icon">🗄️</div>
+            <h3>Data Layer</h3>
+            <p>The database stores all persistent data — tables for Industries, Locations, Readings, Inspections, Violations, and Users.</p>
+            <div class="tier-tech">MySQL &bull; SQL &bull; Stored Programs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- APP SHELL (shown after login)                   -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="app-shell" id="app-shell" style="display:none">
+
+    <!-- ─── Sidebar ──────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🏭</div>
+        <div>
+          <h1 class="brand-title">PollutionDB</h1>
+          <span class="brand-sub" id="portal-label">Admin Portal</span>
+        </div>
+      </div>
+
+      <div class="user-badge" id="user-badge">
+        <div class="user-avatar" id="user-avatar">A</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">Admin</div>
+          <div class="user-role" id="user-role-badge">admin</div>
+        </div>
+        <button class="theme-toggle" id="btn-theme" title="Switch theme" aria-label="Switch theme">☀</button>
+        <button class="logout-btn" id="btn-logout" title="Logout">⏻</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
+        </a>
+        <a class="nav-item" data-view="architecture" id="nav-architecture">
+          <span class="nav-icon">🏗️</span><span class="nav-text">Architecture</span>
+        </a>
+
+        <!-- Admin-only nav items -->
+        <div id="admin-nav">
+          <a class="nav-item" data-view="console" id="nav-console">
+            <span class="nav-icon">⌨️</span><span class="nav-text">SQL Console</span>
+          </a>
+          <a class="nav-item" data-view="users" id="nav-users">
+            <span class="nav-icon">👥</span><span class="nav-text">User Management</span>
+          </a>
+          <div class="nav-section-label">Tables (Full Access)</div>
+          <div id="table-nav-list"></div>
+        </div>
+
+        <!-- User/Inspector nav items -->
+        <div id="user-nav" style="display:none">
+          <div class="nav-section-label">View Data</div>
+          <a class="nav-item" data-view="user-pollution" id="nav-user-pollution">
+            <span class="nav-icon">🌫️</span><span class="nav-text">Pollution Data</span>
+          </a>
+          <a class="nav-item" data-view="user-inspections" id="nav-user-inspections">
+            <span class="nav-icon">🔍</span><span class="nav-text">Inspections</span>
+          </a>
+          <a class="nav-item" data-view="user-violations" id="nav-user-violations">
+            <span class="nav-icon">⚠️</span><span class="nav-text">Violations</span>
+          </a>
+          <a class="nav-item" data-view="user-industries" id="nav-user-industries">
+            <span class="nav-icon">🏭</span><span class="nav-text">Industries</span>
+          </a>
+        </div>
+
+        <!-- Teacher-only nav items -->
+        <div id="teacher-nav" style="display:none">
+          <div class="nav-section-label">DBMS Guide</div>
+          <a class="nav-item" data-view="teacher-guide" id="nav-teacher-guide">
+            <span class="nav-icon">📘</span><span class="nav-text">Teacher Mode</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>DBMS Project — Group 9</span>
+      </div>
+    </aside>
+
+    <!-- ─── Main Content ─────────────────────────── -->
+    <main class="main" id="main">
+
+      <!-- ── Dashboard ───────────────────────────── -->
+      <section class="view active" id="view-dashboard">
+        <div class="view-header">
+          <h2>Dashboard</h2>
+          <span class="view-subtitle" id="dashboard-subtitle">System overview and pollution metrics</span>
+        </div>
+        <div class="role-banner" id="role-banner"></div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="dashboard-panels">
+          <div class="panel">
+            <h3 class="panel-title">🏭 Top Polluted Locations (PM2.5)</h3>
+            <div id="top-polluted"></div>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">⚠️ Violations Breakdown</h3>
+            <div class="violations-charts">
+              <div id="violations-by-type"></div>
+              <div id="violations-by-status"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3 class="panel-title">📋 Recent Inspections</h3>
+            <div id="recent-inspections"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Teacher Mode ─────────────────────────── -->
+      <section class="view" id="view-teacher-guide">
+        <div class="view-header">
+          <h2>Teacher Mode</h2>
+          <span class="view-subtitle">DBMS explanation of schema, keys, relationships, and SQL flow</span>
+        </div>
+
+        <div class="teacher-layout">
+          <section class="teacher-hero">
+            <h3>Industrial Pollution Monitoring System</h3>
+            <p>This project stores industries, their locations, monitoring stations, pollution readings, inspections, violations, and users. The main DBMS idea is that every real-world entity is represented as a table, connected using primary keys and foreign keys.</p>
+          </section>
+
+          <section class="teacher-grid">
+            <div class="panel">
+              <h3 class="panel-title">Project Aim and Problem</h3>
+              <ul class="teacher-list">
+                <li><strong>Aim:</strong> build a centralized relational database for industrial pollution monitoring and compliance management.</li>
+                <li><strong>Problem:</strong> pollution readings, inspections, and violations are hard to track when they are kept in scattered files or manual records.</li>
+                <li><strong>Solution:</strong> store industries, locations, stations, readings, inspections, and penalties in linked MySQL tables.</li>
+                <li><strong>DBMS focus:</strong> ER modelling, relational mapping, normalization, constraints, joins, aggregates, views, triggers, procedures, cursors, and transactions.</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3 class="panel-title">Scope From Report</h3>
+              <ul class="teacher-list">
+                <li>Industries and their city/area locations.</li>
+                <li>Monitoring stations categorized as Air, Water, Noise, or Combined.</li>
+                <li>Pollution readings for PM2.5, PM10, NO2, SO2, water pH, and noise level.</li>
+                <li>Inspection reports with inspector name, date, remarks, and result.</li>
+                <li>Violation records with penalty amount and status.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">ER Diagram</h3>
+            <div class="er-diagram" aria-label="ER diagram showing database entities and relationships">
+              <div class="er-entity er-location">
+                <strong>Location</strong>
+                <span><b>PK</b> location_id</span>
+                <span>area_name</span>
+                <span>city</span>
+              </div>
+
+              <div class="er-entity er-industry">
+                <strong>Industry</strong>
+                <span><b>PK</b> industry_id</span>
+                <span>industry_name</span>
+                <span>industry_type</span>
+                <span>license_number <b>UNIQUE</b></span>
+                <span><b>FK</b> location_id</span>
+              </div>
+
+              <div class="er-entity er-station">
+                <strong>MonitoringStation</strong>
+                <span><b>PK</b> station_id</span>
+                <span><b>FK</b> location_id</span>
+                <span>station_type</span>
+              </div>
+
+              <div class="er-entity er-reading">
+                <strong>PollutionReading</strong>
+                <span><b>PK</b> reading_id</span>
+                <span><b>FK</b> station_id</span>
+                <span>reading_datetime</span>
+                <span>PM25, PM10, NO2, SO2</span>
+                <span>water_ph, noise_level</span>
+              </div>
+
+              <div class="er-entity er-inspection">
+                <strong>Inspection</strong>
+                <span><b>PK</b> inspection_id</span>
+                <span><b>FK</b> industry_id</span>
+                <span>inspection_date</span>
+                <span>inspector_name</span>
+                <span>remarks, result</span>
+              </div>
+
+              <div class="er-entity er-violation">
+                <strong>Violation</strong>
+                <span><b>PK</b> violation_id</span>
+                <span><b>FK</b> industry_id</span>
+                <span><b>FK</b> reading_id</span>
+                <span>violation_type</span>
+                <span>penalty_amount, status</span>
+              </div>
+
+              <div class="er-link link-location-industry">1:N</div>
+              <div class="er-link link-location-station">1:N</div>
+              <div class="er-link link-station-reading">1:N</div>
+              <div class="er-link link-industry-inspection">1:N</div>
+              <div class="er-link link-industry-violation">1:N</div>
+              <div class="er-link link-reading-violation">1:N</div>
+            </div>
+            <p class="teacher-note">Explain this as: Location is the parent table. Industries and monitoring stations belong to a location. Stations generate readings. Industries are inspected. Violations connect both the industry responsible and the reading that caused the violation.</p>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">Overall Working</h3>
+            <div class="teacher-flow">
+              <div><strong>1. User logs in</strong><span>The Users table checks username, password, and role.</span></div>
+              <div><strong>2. Browser calls API</strong><span>The frontend sends requests like GET /api/tables/Industry/data.</span></div>
+              <div><strong>3. Server runs SQL</strong><span>Node.js creates SELECT, INSERT, DELETE, and dashboard aggregate queries.</span></div>
+              <div><strong>4. MySQL returns rows</strong><span>The result set is sent back as JSON and shown as tables/charts.</span></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">Tables, Primary Keys, and Purpose</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Table</th><th>Primary Key</th><th>Main Purpose</th><th>Important Foreign Keys</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Users</td><td>user_id</td><td>Stores login accounts and role-based access.</td><td>None</td></tr>
+                  <tr><td>Location</td><td>location_id</td><td>Stores area and city details.</td><td>None</td></tr>
+                  <tr><td>Industry</td><td>industry_id</td><td>Stores industry details and license number.</td><td>location_id references Location</td></tr>
+                  <tr><td>MonitoringStation</td><td>station_id</td><td>Stores air, water, noise, or combined stations.</td><td>location_id references Location</td></tr>
+                  <tr><td>PollutionReading</td><td>reading_id</td><td>Stores measured PM2.5, PM10, pH, noise, and gas values.</td><td>station_id references MonitoringStation</td></tr>
+                  <tr><td>Inspection</td><td>inspection_id</td><td>Stores official inspection reports for industries.</td><td>industry_id references Industry</td></tr>
+                  <tr><td>Violation</td><td>violation_id</td><td>Stores penalties raised from readings and industries.</td><td>industry_id references Industry; reading_id references PollutionReading</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="teacher-grid">
+            <div class="panel">
+              <h3 class="panel-title">Normalization Explanation</h3>
+              <ul class="teacher-list">
+                <li><strong>1NF:</strong> every field stores atomic values; there are no repeating groups. Pollution values are separate columns like PM25, PM10, water_ph, and noise_level.</li>
+                <li><strong>2NF:</strong> every table uses a single-column primary key, so non-key attributes depend on the full key and there are no partial dependencies.</li>
+                <li><strong>3NF:</strong> non-key attributes depend only on the primary key. For example, city is kept in Location, not repeated inside Industry.</li>
+                <li><strong>Result:</strong> lower redundancy, fewer update anomalies, and cleaner joins between related tables.</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3 class="panel-title">Functional Dependencies</h3>
+              <div class="relationship-list compact">
+                <div>location_id <span>determines</span> area_name, city</div>
+                <div>industry_id <span>determines</span> industry_name, type, license, location_id</div>
+                <div>station_id <span>determines</span> location_id, station_type</div>
+                <div>reading_id <span>determines</span> station_id and pollution values</div>
+                <div>inspection_id <span>determines</span> industry_id, date, inspector, result</div>
+                <div>violation_id <span>determines</span> industry_id, reading_id, penalty, status</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="teacher-grid">
+            <div class="panel">
+              <h3 class="panel-title">Key DBMS Concepts Used</h3>
+              <ul class="teacher-list">
+                <li><strong>Primary Key:</strong> uniquely identifies each row, such as industry_id in Industry.</li>
+                <li><strong>Foreign Key:</strong> connects two tables, such as Industry.location_id to Location.location_id.</li>
+                <li><strong>Normalization:</strong> repeated data is separated into related tables instead of one large table.</li>
+                <li><strong>Constraints:</strong> CHECK, UNIQUE, NOT NULL, and foreign keys protect data correctness.</li>
+                <li><strong>CRUD:</strong> admin can create, read, update, and delete records using SQL through the backend.</li>
+                <li><strong>Aggregate Queries:</strong> dashboard counts, sums, averages, GROUP BY, and ORDER BY summarize data.</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3 class="panel-title">Relationship Summary</h3>
+              <div class="relationship-list">
+                <div>Location <span>1 to many</span> Industry</div>
+                <div>Location <span>1 to many</span> MonitoringStation</div>
+                <div>MonitoringStation <span>1 to many</span> PollutionReading</div>
+                <div>Industry <span>1 to many</span> Inspection</div>
+                <div>Industry <span>1 to many</span> Violation</div>
+                <div>PollutionReading <span>1 to many</span> Violation</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3 class="panel-title">Useful SQL Examples for Explanation</h3>
+            <div class="sql-explain-grid">
+              <pre><code>SELECT i.industry_name, l.city
+FROM Industry i
+JOIN Location l ON i.location_id = l.location_id;</code></pre>
+              <pre><code>SELECT violation_type, COUNT(*) AS total
+FROM Violation
+GROUP BY violation_type;</code></pre>
+              <pre><code>SELECT l.city, ROUND(AVG(pr.PM25), 2) AS avg_pm25
+FROM PollutionReading pr
+JOIN MonitoringStation ms ON pr.station_id = ms.station_id
+JOIN Location l ON ms.location_id = l.location_id
+GROUP BY l.city;</code></pre>
+            </div>
+          </section>
+
+          <section class="teacher-grid">
+            <div class="panel">
+              <h3 class="panel-title">SQL Features Demonstrated</h3>
+              <ul class="teacher-list">
+                <li><strong>DDL:</strong> CREATE TABLE statements define entities, keys, constraints, and cascades.</li>
+                <li><strong>DML:</strong> INSERT, UPDATE, and DELETE manage sample data and admin operations.</li>
+                <li><strong>DQL:</strong> SELECT queries retrieve data for tables, dashboards, and reports.</li>
+                <li><strong>JOINs:</strong> combine Industry with Location, Violation with PollutionReading, and station readings with city details.</li>
+                <li><strong>Aggregates:</strong> COUNT, SUM, AVG, MAX, GROUP BY, and HAVING create summaries like total penalties and average PM2.5.</li>
+                <li><strong>Views:</strong> report-oriented views summarize pollution and compliance data.</li>
+              </ul>
+            </div>
+
+            <div class="panel">
+              <h3 class="panel-title">Procedural SQL Layer</h3>
+              <ul class="teacher-list">
+                <li><strong>Trigger:</strong> trg_detect_violation runs after a new PollutionReading and auto-creates Violation rows when PM2.5 &gt; 100, water pH &lt; 5, or noise &gt; 85 dB.</li>
+                <li><strong>Procedures:</strong> sp_generate_pollution_report, sp_record_inspection, and sp_safe_insert_industry encapsulate common operations.</li>
+                <li><strong>Functions:</strong> fn_pollution_severity and fn_water_quality classify pollution readings into meaningful labels.</li>
+                <li><strong>Cursors:</strong> inspection and city dashboard procedures process row-by-row summaries.</li>
+                <li><strong>Exception handling:</strong> duplicate license, invalid location, invalid industry, and SQL errors are handled with messages or rollback.</li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="teacher-grid">
+            <div class="panel">
+              <h3 class="panel-title">Transaction and ACID Explanation</h3>
+              <ul class="teacher-list">
+                <li><strong>Atomicity:</strong> inspection recording either fully inserts or rolls back on error.</li>
+                <li><strong>Consistency:</strong> PK, FK, CHECK, UNIQUE, and trigger rules keep the database valid.</li>
+                <li><strong>Isolation:</strong> concurrent users should not interfere with each other's transaction state.</li>
+                <li><strong>Durability:</strong> after COMMIT, changes remain saved in MySQL.</li>
+                <li><strong>Example:</strong> sp_resolve_violations updates pending violations inside a transaction and uses ROLLBACK when needed.</li>
+              </ul>
+            </div>
+
+            <!-- <div class="panel">
+              <h3 class="panel-title">How to Explain to Ma'am</h3>
+              <ol class="teacher-steps">
+                <li>Start with the problem: industries produce pollution data and regulators need organized records.</li>
+                <li>Show the ER diagram and identify Location as the parent for Industry and MonitoringStation.</li>
+                <li>Explain each primary key and how foreign keys create relationships.</li>
+                <li>Explain normalization: city data is not repeated in Industry; it is referenced using location_id.</li>
+                <li>Run one JOIN query to prove relationship mapping works.</li>
+                <li>Show dashboard aggregates as COUNT, SUM, AVG, GROUP BY, and ORDER BY in action.</li>
+                <li>Explain the trigger: inserting a dangerous reading automatically creates violation rows.</li>
+                <li>End with transactions and ACID: the system protects correctness during updates.</li>
+              </ol>
+            </div> -->
+          </section>
+        </div>
+      </section>
+
+      <!-- ── Architecture View ───────────────────── -->
+      <section class="view" id="view-architecture">
+        <div class="view-header">
+          <h2>Three-Tier Architecture</h2>
+          <span class="view-subtitle">How this system is structured</span>
+        </div>
+        <div class="arch-full">
+          <!-- Tier Diagram -->
+          <div class="arch-diagram">
+            <div class="arch-box tier-pres">
+              <div class="arch-box-header">
+                <span class="arch-box-num">TIER 1</span>
+                <span class="arch-box-title">Presentation Layer (Client)</span>
+              </div>
+              <div class="arch-box-body">
+                <div class="arch-box-icon">🖥️</div>
+                <div class="arch-box-details">
+                  <p><strong>Role:</strong> User Interface — what the user sees and interacts with</p>
+                  <p><strong>Components:</strong></p>
+                  <ul>
+                    <li>Login Page with role selection</li>
+                    <li><strong>Admin Portal</strong> — Full CRUD, SQL Console, User Management</li>
+                    <li><strong>User Portal</strong> — Read-only dashboards and reports</li>
+                    <li><strong>Inspector Portal</strong> — View inspections and pollution data</li>
+                  </ul>
+                  <div class="arch-tech-pills">
+                    <span class="pill">HTML5</span><span class="pill">CSS3</span><span class="pill">JavaScript</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="arch-connector">
+              <div class="connector-line"></div>
+              <div class="connector-label">HTTP API &bull; JSON &bull; REST</div>
+              <div class="connector-line"></div>
+            </div>
+
+            <div class="arch-box tier-app">
+              <div class="arch-box-header">
+                <span class="arch-box-num">TIER 2</span>
+                <span class="arch-box-title">Application Layer (Server)</span>
+              </div>
+              <div class="arch-box-body">
+                <div class="arch-box-icon">⚙️</div>
+                <div class="arch-box-details">
+                  <p><strong>Role:</strong> Business Logic — processes requests, enforces rules</p>
+                  <p><strong>Components:</strong></p>
+                  <ul>
+                    <li>Authentication &amp; Role-Based Access Control</li>
+                    <li>CRUD Operations (Create, Read, Update, Delete)</li>
+                    <li>Data Validation &amp; Constraint Enforcement</li>
+                    <li>Query Execution Engine for SQL Console</li>
+                    <li>Dashboard Aggregation &amp; Reporting</li>
+                  </ul>
+                  <div class="arch-tech-pills">
+                    <span class="pill">Node.js</span><span class="pill">Express.js</span><span class="pill">REST API</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="arch-connector">
+              <div class="connector-line"></div>
+              <div class="connector-label">SQL Queries &bull; Result Sets &bull; Transactions</div>
+              <div class="connector-line"></div>
+            </div>
+
+            <div class="arch-box tier-data">
+              <div class="arch-box-header">
+                <span class="arch-box-num">TIER 3</span>
+                <span class="arch-box-title">Data Layer (Database)</span>
+              </div>
+              <div class="arch-box-body">
+                <div class="arch-box-icon">🗄️</div>
+                <div class="arch-box-details">
+                  <p><strong>Role:</strong> Data Storage — persistent, structured data management</p>
+                  <p><strong>Components:</strong></p>
+                  <ul>
+                    <li>7 Normalized Tables (3NF): Users, Location, Industry, MonitoringStation, PollutionReading, Inspection, Violation</li>
+                    <li>Primary Keys, Foreign Keys, CHECK Constraints</li>
+                    <li>Stored Procedures, Functions, Triggers, Cursors</li>
+                    <li>Transaction Management (COMMIT, ROLLBACK, SAVEPOINT)</li>
+                  </ul>
+                  <div class="arch-tech-pills">
+                    <span class="pill">MySQL</span><span class="pill">SQL</span><span class="pill">Stored Programs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Flow -->
+          <div class="panel" style="margin-top:20px">
+            <h3 class="panel-title">🔄 How It Works — Request Flow</h3>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <div class="flow-num">1</div>
+                <div class="flow-content">
+                  <strong>User Action</strong>
+                  <p>User clicks "View Industries" or runs a SQL query in the browser (Tier 1)</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-num">2</div>
+                <div class="flow-content">
+                  <strong>HTTP Request</strong>
+                  <p>Browser sends a REST API request (e.g., GET /api/tables/Industry/data) to the server</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-num">3</div>
+                <div class="flow-content">
+                  <strong>Business Logic</strong>
+                  <p>Server (Tier 2) validates the request, checks user role permissions, and prepares the SQL query</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-num">4</div>
+                <div class="flow-content">
+                  <strong>Database Query</strong>
+                  <p>Server sends the SQL query to the database (Tier 3), which executes it and returns result set</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <div class="flow-num">5</div>
+                <div class="flow-content">
+                  <strong>Response</strong>
+                  <p>Server formats the data as JSON and sends it back to the browser, which renders it as a table</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Portals comparison table -->
+          <div class="panel" style="margin-top:20px">
+            <h3 class="panel-title">🔐 Role-Based Access Control</h3>
+            <div class="table-container" style="border:none">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Admin 🛡️</th>
+                    <th>Inspector 🔍</th>
+                    <th>User 👤</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td>Dashboard</td><td>✅ Full</td><td>✅ Full</td><td>✅ Limited</td></tr>
+                  <tr><td>View Tables</td><td>✅ All Tables</td><td>✅ Read-Only</td><td>✅ Read-Only</td></tr>
+                  <tr><td>Add / Edit / Delete Rows</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>SQL Console</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>User Management</td><td>✅</td><td>❌</td><td>❌</td></tr>
+                  <tr><td>Architecture View</td><td>✅</td><td>✅</td><td>✅</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SQL Console (Admin) ─────────────────── -->
+      <section class="view" id="view-console">
+        <div class="view-header">
+          <h2>SQL Console</h2>
+          <span class="view-subtitle">Run custom queries against the database</span>
+        </div>
+        <div class="console-area">
+          <div class="console-editor">
+            <div class="console-toolbar">
+              <span class="console-label">SQL Query</span>
+              <div class="console-btns">
+                <button class="btn btn-small btn-ghost" id="btn-clear-sql">Clear</button>
+                <button class="btn btn-small btn-primary" id="btn-run-sql">▶ Run</button>
+              </div>
+            </div>
+            <textarea id="sql-input" placeholder="SELECT * FROM Industry;" spellcheck="false"></textarea>
+          </div>
+          <div class="console-presets">
+            <span class="presets-label">Quick Queries:</span>
+            <div class="preset-chips" id="preset-chips"></div>
+          </div>
+          <div class="console-result" id="console-result">
+            <div class="result-placeholder">Run a query to see results here</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── User Management (Admin) ─────────────── -->
+      <section class="view" id="view-users">
+        <div class="view-header">
+          <h2>👥 User Management</h2>
+          <div class="view-actions">
+            <button class="btn btn-primary" id="btn-add-user">＋ Add User</button>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Username</th><th>Full Name</th><th>Role</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="users-table-body"></tbody>
+          </table>
+        </div>
+        <!-- Add User Modal -->
+        <div class="modal-overlay" id="user-modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <h3>Add New User</h3>
+              <button class="modal-close" id="user-modal-close">✕</button>
+            </div>
+            <form id="user-form" class="modal-body">
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required placeholder="e.g. inspector3" />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="Min 6 characters" />
+              </div>
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="full_name" required placeholder="e.g. Anil Gupta" />
+              </div>
+              <div class="form-group">
+                <label>Role</label>
+                <select name="role" required>
+                  <option value="">Select role...</option>
+                  <option value="admin">Admin</option>
+                  <option value="inspector">Inspector</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="user">User</option>
+                </select>
+              </div>
+            </form>
+            <div class="modal-footer">
+              <button class="btn btn-ghost" id="user-modal-cancel">Cancel</button>
+              <button class="btn btn-primary" id="user-modal-submit">Create User</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Table View (Admin) ──────────────────── -->
+      <section class="view" id="view-table">
+        <div class="view-header">
+          <h2 id="table-view-title">Table</h2>
+          <div class="view-actions" id="table-admin-actions">
+            <button class="btn btn-primary" id="btn-add-row">＋ Add Row</button>
+            <button class="btn btn-ghost" id="btn-refresh-table">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="table-container" id="table-data-container">
+          <table class="data-table" id="data-table">
+            <thead id="data-table-head"></thead>
+            <tbody id="data-table-body"></tbody>
+          </table>
+        </div>
+        <div class="table-footer" id="table-footer"></div>
+        <div class="modal-overlay" id="modal-overlay">
+          <div class="modal" id="insert-modal">
+            <div class="modal-header">
+              <h3 id="modal-title">Add New Row</h3>
+              <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <form id="insert-form" class="modal-body"></form>
+            <div class="modal-footer">
+              <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+              <button class="btn btn-primary" id="modal-submit">Insert</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── User Portal: Pollution Data ─────────── -->
+      <section class="view" id="view-user-pollution">
+        <div class="view-header">
+          <h2>🌫️ Pollution Readings</h2>
+          <span class="view-subtitle">View environmental monitoring data (read-only)</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Station</th><th>Type</th><th>Location</th><th>Date</th><th>PM2.5</th><th>PM10</th><th>NO₂</th><th>SO₂</th><th>Water pH</th><th>Noise (dB)</th><th>Severity</th></tr>
+            </thead>
+            <tbody id="user-pollution-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── User Portal: Inspections ────────────── -->
+      <section class="view" id="view-user-inspections">
+        <div class="view-header">
+          <h2>🔍 Inspection Reports</h2>
+          <span class="view-subtitle">View inspection history (read-only)</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Industry</th><th>Date</th><th>Inspector</th><th>Remarks</th><th>Result</th></tr>
+            </thead>
+            <tbody id="user-inspections-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── User Portal: Violations ─────────────── -->
+      <section class="view" id="view-user-violations">
+        <div class="view-header">
+          <h2>⚠️ Violation Records</h2>
+          <span class="view-subtitle">View compliance violations (read-only)</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Industry</th><th>Type</th><th>Penalty (₹)</th><th>Status</th></tr>
+            </thead>
+            <tbody id="user-violations-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── User Portal: Industries ─────────────── -->
+      <section class="view" id="view-user-industries">
+        <div class="view-header">
+          <h2>🏭 Registered Industries</h2>
+          <span class="view-subtitle">View industry directory (read-only)</span>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Type</th><th>License</th><th>Location</th><th>City</th></tr>
+            </thead>
+            <tbody id="user-industries-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="confirm-modal-overlay">
+    <div class="modal confirm-modal">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title">Confirm Action</h3>
+        <button class="modal-close" id="confirm-modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message" id="confirm-modal-message">Are you sure?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="confirm-modal-cancel">Cancel</button>
+        <button class="btn btn-danger" id="confirm-modal-ok">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

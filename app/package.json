@@ -1,0 +1,14 @@
+{
+  "name": "pollution-monitoring-system",
+  "version": "1.0.0",
+  "description": "Industrial Pollution Monitoring System — DBMS Project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "mysql2": "^3.22.3"
+  }
+}
