@@ -31,7 +31,35 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModal();
   setupConfirmModal();
   setupUserManagement();
+  setupSimulation();
 });
+
+function setupSimulation() {
+  const btn = document.getElementById('btn-start-simulation');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = 'Simulating...';
+
+    const res = await fetchJSON('/api/simulation/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count: 20 }),
+    });
+
+    btn.disabled = false;
+    btn.textContent = prev;
+
+    if (res && res.success) {
+      toast(`Simulation created ${res.created} inspections (${res.warnings} warnings).`, 'success');
+      loadDashboard();
+    } else {
+      toast(res?.error || 'Simulation failed', 'error');
+    }
+  });
+}
 
 // ═══════════════════════════════════════════════════════════
 // LOGIN
@@ -380,11 +408,15 @@ async function loadUserInspections() {
   });
   const tbody = document.getElementById('user-inspections-body');
   if (res.rows) {
-    tbody.innerHTML = res.rows.map(r => `<tr>
-      <td>${r.inspection_id}</td><td>${r.industry_name}</td><td>${r.inspection_date}</td>
-      <td>${r.inspector_name}</td><td title="${esc(r.remarks)}">${esc(r.remarks)}</td>
-      <td><span class="badge badge-${r.result.toLowerCase()}">${r.result}</span></td>
-    </tr>`).join('');
+    tbody.innerHTML = res.rows.map(r => {
+      const isWarning = String(r.result).toLowerCase() === 'warning';
+      const trClass = isWarning ? 'row-warning' : '';
+      return `<tr class="${trClass}">
+        <td>${r.inspection_id}</td><td>${r.industry_name}</td><td>${r.inspection_date}</td>
+        <td>${r.inspector_name}</td><td title="${esc(r.remarks)}">${esc(r.remarks)}</td>
+        <td><span class="badge badge-${r.result.toLowerCase()}">${r.result}</span></td>
+      </tr>`;
+    }).join('');
   }
 }
 
