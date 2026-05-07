@@ -259,7 +259,6 @@ function enterApp() {
 
   // Show/hide nav sections
   document.getElementById('nav-dashboard').style.display = isTeacher ? 'none' : 'flex';
-  document.getElementById('nav-architecture').style.display = isTeacher ? 'none' : 'flex';
   document.getElementById('admin-nav').style.display = isAdmin ? 'block' : 'none';
   document.getElementById('user-nav').style.display = (!isAdmin && !isTeacher) ? 'block' : 'none';
   document.getElementById('teacher-nav').style.display = isTeacher ? 'block' : 'none';

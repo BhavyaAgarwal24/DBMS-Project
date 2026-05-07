@@ -124,11 +124,7 @@
         <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
           <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
         </a>
-        <a class="nav-item" data-view="architecture" id="nav-architecture">
-          <span class="nav-icon">🏗️</span><span class="nav-text">Architecture</span>
-        </a>
-
-        <!-- Admin-only nav items -->
+<!-- Admin-only nav items -->
         <div id="admin-nav">
           <a class="nav-item" data-view="console" id="nav-console">
             <span class="nav-icon">⌨️</span><span class="nav-text">SQL Console</span>
@@ -450,169 +446,7 @@ GROUP BY l.city;</code></pre>
           </section>
         </div>
       </section>
-
-      <!-- ── Architecture View ───────────────────── -->
-      <section class="view" id="view-architecture">
-        <div class="view-header">
-          <h2>Three-Tier Architecture</h2>
-          <span class="view-subtitle">How this system is structured</span>
-        </div>
-        <div class="arch-full">
-          <!-- Tier Diagram -->
-          <div class="arch-diagram">
-            <div class="arch-box tier-pres">
-              <div class="arch-box-header">
-                <span class="arch-box-num">TIER 1</span>
-                <span class="arch-box-title">Presentation Layer (Client)</span>
-              </div>
-              <div class="arch-box-body">
-                <div class="arch-box-icon">🖥️</div>
-                <div class="arch-box-details">
-                  <p><strong>Role:</strong> User Interface — what the user sees and interacts with</p>
-                  <p><strong>Components:</strong></p>
-                  <ul>
-                    <li>Login Page with role selection</li>
-                    <li><strong>Admin Portal</strong> — Full CRUD, SQL Console, User Management</li>
-                    <li><strong>User Portal</strong> — Read-only dashboards and reports</li>
-                    <li><strong>Inspector Portal</strong> — View inspections and pollution data</li>
-                  </ul>
-                  <div class="arch-tech-pills">
-                    <span class="pill">HTML5</span><span class="pill">CSS3</span><span class="pill">JavaScript</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="arch-connector">
-              <div class="connector-line"></div>
-              <div class="connector-label">HTTP API &bull; JSON &bull; REST</div>
-              <div class="connector-line"></div>
-            </div>
-
-            <div class="arch-box tier-app">
-              <div class="arch-box-header">
-                <span class="arch-box-num">TIER 2</span>
-                <span class="arch-box-title">Application Layer (Server)</span>
-              </div>
-              <div class="arch-box-body">
-                <div class="arch-box-icon">⚙️</div>
-                <div class="arch-box-details">
-                  <p><strong>Role:</strong> Business Logic — processes requests, enforces rules</p>
-                  <p><strong>Components:</strong></p>
-                  <ul>
-                    <li>Authentication &amp; Role-Based Access Control</li>
-                    <li>CRUD Operations (Create, Read, Update, Delete)</li>
-                    <li>Data Validation &amp; Constraint Enforcement</li>
-                    <li>Query Execution Engine for SQL Console</li>
-                    <li>Dashboard Aggregation &amp; Reporting</li>
-                  </ul>
-                  <div class="arch-tech-pills">
-                    <span class="pill">Node.js</span><span class="pill">Express.js</span><span class="pill">REST API</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="arch-connector">
-              <div class="connector-line"></div>
-              <div class="connector-label">SQL Queries &bull; Result Sets &bull; Transactions</div>
-              <div class="connector-line"></div>
-            </div>
-
-            <div class="arch-box tier-data">
-              <div class="arch-box-header">
-                <span class="arch-box-num">TIER 3</span>
-                <span class="arch-box-title">Data Layer (Database)</span>
-              </div>
-              <div class="arch-box-body">
-                <div class="arch-box-icon">🗄️</div>
-                <div class="arch-box-details">
-                  <p><strong>Role:</strong> Data Storage — persistent, structured data management</p>
-                  <p><strong>Components:</strong></p>
-                  <ul>
-                    <li>7 Normalized Tables (3NF): Users, Location, Industry, MonitoringStation, PollutionReading, Inspection, Violation</li>
-                    <li>Primary Keys, Foreign Keys, CHECK Constraints</li>
-                    <li>Stored Procedures, Functions, Triggers, Cursors</li>
-                    <li>Transaction Management (COMMIT, ROLLBACK, SAVEPOINT)</li>
-                  </ul>
-                  <div class="arch-tech-pills">
-                    <span class="pill">MySQL</span><span class="pill">SQL</span><span class="pill">Stored Programs</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Data Flow -->
-          <div class="panel" style="margin-top:20px">
-            <h3 class="panel-title">🔄 How It Works — Request Flow</h3>
-            <div class="flow-steps">
-              <div class="flow-step">
-                <div class="flow-num">1</div>
-                <div class="flow-content">
-                  <strong>User Action</strong>
-                  <p>User clicks "View Industries" or runs a SQL query in the browser (Tier 1)</p>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-num">2</div>
-                <div class="flow-content">
-                  <strong>HTTP Request</strong>
-                  <p>Browser sends a REST API request (e.g., GET /api/tables/Industry/data) to the server</p>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-num">3</div>
-                <div class="flow-content">
-                  <strong>Business Logic</strong>
-                  <p>Server (Tier 2) validates the request, checks user role permissions, and prepares the SQL query</p>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-num">4</div>
-                <div class="flow-content">
-                  <strong>Database Query</strong>
-                  <p>Server sends the SQL query to the database (Tier 3), which executes it and returns result set</p>
-                </div>
-              </div>
-              <div class="flow-step">
-                <div class="flow-num">5</div>
-                <div class="flow-content">
-                  <strong>Response</strong>
-                  <p>Server formats the data as JSON and sends it back to the browser, which renders it as a table</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Portals comparison table -->
-          <div class="panel" style="margin-top:20px">
-            <h3 class="panel-title">🔐 Role-Based Access Control</h3>
-            <div class="table-container" style="border:none">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Feature</th>
-                    <th>Admin 🛡️</th>
-                    <th>Inspector 🔍</th>
-                    <th>User 👤</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Dashboard</td><td>✅ Full</td><td>✅ Full</td><td>✅ Limited</td></tr>
-                  <tr><td>View Tables</td><td>✅ All Tables</td><td>✅ Read-Only</td><td>✅ Read-Only</td></tr>
-                  <tr><td>Add / Edit / Delete Rows</td><td>✅</td><td>❌</td><td>❌</td></tr>
-                  <tr><td>SQL Console</td><td>✅</td><td>❌</td><td>❌</td></tr>
-                  <tr><td>User Management</td><td>✅</td><td>❌</td><td>❌</td></tr>
-                  <tr><td>Architecture View</td><td>✅</td><td>✅</td><td>✅</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── SQL Console (Admin) ─────────────────── -->
+<!-- ── SQL Console (Admin) ─────────────────── -->
       <section class="view" id="view-console">
         <div class="view-header">
           <h2>SQL Console</h2>
@@ -815,4 +649,5 @@ GROUP BY l.city;</code></pre>
   <script src="app.js"></script>
 </body>
 </html>
+
 
