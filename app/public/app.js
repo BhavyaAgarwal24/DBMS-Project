@@ -533,10 +533,10 @@ async function loadUserViolations() {
   });
   const tbody = document.getElementById('user-violations-body');
   if (res.rows) {
-    const signature = res.rows.slice(0, 12).map(r => `${r.violation_id}:${r.status}`).join('|');
+    const canManage = currentUser && currentUser.role === 'inspector';
+    const signature = `${canManage ? 'inspector' : 'viewer'}:${res.rows.slice(0, 12).map(r => `${r.violation_id}:${r.status}`).join('|')}`;
     if (signature === renderSignatures.userViolations) return;
     renderSignatures.userViolations = signature;
-    const canManage = currentUser && currentUser.role === 'inspector';
     const headRow = document.querySelector('#view-user-violations thead tr');
     if (headRow) {
       headRow.innerHTML = canManage
@@ -850,6 +850,32 @@ async function runSQL() {
       </table>
     </div>
     <div class="result-meta">${res.rowCount} row${res.rowCount!==1?'s':''} returned</div>`;
+}
+
+function renderViolationActionButtons(row) {
+  const statuses = ['Pending', 'Resolved', 'Appealed'];
+  return statuses.map((status) => {
+    const isCurrent = row.status === status;
+    return `<button type="button" class="status-btn ${isCurrent ? 'active' : ''}" ${isCurrent ? 'disabled' : ''} onclick="updateViolationStatus(${row.violation_id}, '${status}')">${status}</button>`;
+  }).join('');
+}
+
+async function updateViolationStatus(id, status) {
+  const res = await fetchJSON(`/api/violations/${id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+
+  if (res.success) {
+    toast(`Violation ${id} marked ${status}.`, 'success');
+    renderSignatures.userViolations = '';
+    loadUserViolations();
+    loadDashboard();
+    return;
+  }
+
+  toast(res.error || 'Failed to update violation status.', 'error');
 }
 
 // ═══════════════════════════════════════════════════════════
