@@ -492,6 +492,30 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+app.put('/api/violations/:id/status', async (req, res) => {
+  try {
+    const allowedStatuses = new Set(['Pending', 'Resolved', 'Appealed']);
+    const { status } = req.body;
+
+    if (!allowedStatuses.has(status)) {
+      throw new Error('Invalid violation status.');
+    }
+
+    const [result] = await db.execute(
+      'UPDATE Violation SET status = ? WHERE violation_id = ?',
+      [status, req.params.id],
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Violation not found.' });
+    }
+
+    res.json({ success: true, changes: result.affectedRows, status });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 app.get('/api/tables', async (req, res) => {
   try {
     const tables = await getTableNames();

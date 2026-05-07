@@ -536,10 +536,18 @@ async function loadUserViolations() {
     const signature = res.rows.slice(0, 12).map(r => `${r.violation_id}:${r.status}`).join('|');
     if (signature === renderSignatures.userViolations) return;
     renderSignatures.userViolations = signature;
+    const canManage = currentUser && currentUser.role === 'inspector';
+    const headRow = document.querySelector('#view-user-violations thead tr');
+    if (headRow) {
+      headRow.innerHTML = canManage
+        ? '<th>ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th><th>Actions</th>'
+        : '<th>ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th>';
+    }
     tbody.innerHTML = res.rows.map(r => `<tr class="${Number(r.violation_id) === Number(simulationMarkers.lastViolationId) ? 'row-new row-violation' : ''}">
       <td>${r.violation_id}</td><td>${r.industry_name}</td><td>${r.violation_type}</td>
       <td>₹${Number(r.penalty_amount).toLocaleString('en-IN')}</td>
       <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      ${canManage ? `<td class="cell-actions">${renderViolationActionButtons(r)}</td>` : ''}
     </tr>`).join('');
   }
 }
