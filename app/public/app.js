@@ -10,6 +10,17 @@ let pendingConfirmAction = null;
 let currentViewId = null;
 let simulationPollTimer = null;
 let lastSimulationSnapshot = null;
+let simulationMarkers = {
+  lastReadingId: null,
+  lastInspectionId: null,
+  lastViolationId: null,
+};
+const renderSignatures = {
+  userPollution: '',
+  userInspections: '',
+  userViolations: '',
+  adminTable: '',
+};
 
 const TABLE_ICONS = {
   Location:'📍', Industry:'🏭', MonitoringStation:'📡',
@@ -75,8 +86,19 @@ function startSimulationPolling() {
 
     const wasRunning = Boolean(lastSimulationSnapshot && lastSimulationSnapshot.running);
     const isRunning = Boolean(res.running);
+    const progressed = !lastSimulationSnapshot
+      || res.created !== lastSimulationSnapshot.created
+      || res.lastReadingId !== lastSimulationSnapshot.lastReadingId
+      || res.lastInspectionId !== lastSimulationSnapshot.lastInspectionId
+      || res.lastViolationId !== lastSimulationSnapshot.lastViolationId;
 
-    if (isRunning || wasRunning) {
+    simulationMarkers = {
+      lastReadingId: res.lastReadingId,
+      lastInspectionId: res.lastInspectionId,
+      lastViolationId: res.lastViolationId,
+    };
+
+    if (progressed || (wasRunning && !isRunning)) {
       refreshActiveSimulationViews();
     }
 
@@ -100,13 +122,18 @@ function refreshActiveSimulationViews() {
   if (currentViewId === 'user-inspections') loadUserInspections();
   if (currentViewId === 'user-violations') loadUserViolations();
   if (currentViewId === 'table' && ['PollutionReading', 'Inspection', 'Violation'].includes(currentTable)) {
-    loadTable(currentTable);
+    loadTable(currentTable, { reuseSchema: true });
   }
 }
 
 async function checkSimulationOnLoad() {
   const res = await fetchJSON('/api/simulation/status');
   if (res && !res.error) {
+    simulationMarkers = {
+      lastReadingId: res.lastReadingId,
+      lastInspectionId: res.lastInspectionId,
+      lastViolationId: res.lastViolationId,
+    };
     lastSimulationSnapshot = res;
     if (res.running) {
       startSimulationPolling();
@@ -442,10 +469,17 @@ async function loadUserPollution() {
   });
   const tbody = document.getElementById('user-pollution-body');
   if (res.rows) {
+    const signature = res.rows.slice(0, 12).map(r => `${r.reading_id}:${r.has_violation}`).join('|');
+    if (signature === renderSignatures.userPollution) return;
+    renderSignatures.userPollution = signature;
     tbody.innerHTML = res.rows.map(r => {
       const severity = getSeverity(r.PM25);
       const hasViolation = Number(r.has_violation) === 1;
-      return `<tr class="${hasViolation ? 'row-violation' : ''}">
+      const rowClass = [
+        hasViolation ? 'row-violation' : '',
+        Number(r.reading_id) === Number(simulationMarkers.lastReadingId) ? 'row-new' : '',
+      ].filter(Boolean).join(' ');
+      return `<tr class="${rowClass}">
         <td>${r.reading_id}</td><td>${r.station_id}</td><td>${r.station_type}</td>
         <td>${r.location}</td><td>${r.reading_datetime}</td>
         <td>${fmtVal(r.PM25)}</td><td>${fmtVal(r.PM10)}</td><td>${fmtVal(r.NO2)}</td><td>${fmtVal(r.SO2)}</td>
@@ -469,10 +503,16 @@ async function loadUserInspections() {
   });
   const tbody = document.getElementById('user-inspections-body');
   if (res.rows) {
+    const signature = res.rows.slice(0, 12).map(r => `${r.inspection_id}:${r.result}`).join('|');
+    if (signature === renderSignatures.userInspections) return;
+    renderSignatures.userInspections = signature;
     tbody.innerHTML = res.rows.map(r => {
       const isWarning = String(r.result).toLowerCase() === 'warning';
       const isFail = String(r.result).toLowerCase() === 'fail';
-      const trClass = isFail ? 'row-violation' : (isWarning ? 'row-warning' : '');
+      const trClass = [
+        isFail ? 'row-violation' : (isWarning ? 'row-warning' : ''),
+        Number(r.inspection_id) === Number(simulationMarkers.lastInspectionId) ? 'row-new' : '',
+      ].filter(Boolean).join(' ');
       return `<tr class="${trClass}">
         <td>${r.inspection_id}</td><td>${r.industry_name}</td><td>${r.inspection_date}</td>
         <td>${r.inspector_name}</td><td title="${esc(r.remarks)}">${esc(r.remarks)}</td>
@@ -494,7 +534,10 @@ async function loadUserViolations() {
   });
   const tbody = document.getElementById('user-violations-body');
   if (res.rows) {
-    tbody.innerHTML = res.rows.map(r => `<tr>
+    const signature = res.rows.slice(0, 12).map(r => `${r.violation_id}:${r.status}`).join('|');
+    if (signature === renderSignatures.userViolations) return;
+    renderSignatures.userViolations = signature;
+    tbody.innerHTML = res.rows.map(r => `<tr class="${Number(r.violation_id) === Number(simulationMarkers.lastViolationId) ? 'row-new row-violation' : ''}">
       <td>${r.violation_id}</td><td>${r.industry_name}</td><td>${r.violation_type}</td>
       <td>₹${Number(r.penalty_amount).toLocaleString('en-IN')}</td>
       <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
@@ -603,14 +646,21 @@ async function deleteUser(id) {
 // ═══════════════════════════════════════════════════════════
 // TABLE VIEW (Admin — CRUD)
 // ═══════════════════════════════════════════════════════════
-async function loadTable(name) {
+async function loadTable(name, options = {}) {
+  const { reuseSchema = false } = options;
   currentTable = name;
+  if (reuseSchema && currentSchema) {
+    const dataRes = await fetchJSON(`/api/tables/${name}/data`);
+    renderTable(currentSchema, dataRes);
+    return;
+  }
   document.getElementById('table-view-title').textContent = `${TABLE_ICONS[name]||'📄'} ${name}`;
   const [schemaRes, dataRes] = await Promise.all([
     fetchJSON(`/api/tables/${name}/schema`),
     fetchJSON(`/api/tables/${name}/data`),
   ]);
   currentSchema = schemaRes;
+  renderSignatures.adminTable = '';
   renderTable(schemaRes, dataRes);
 }
 
@@ -624,9 +674,13 @@ function renderTable(schema, data) {
   thead.innerHTML = `<tr>${cols.map(c => `<th>${c.name}${Number(c.pk) === 1 ? ' 🔑' : ''}</th>`).join('')}<th>Actions</th></tr>`;
 
   if (data.rows.length === 0) {
+    renderSignatures.adminTable = 'empty';
     tbody.innerHTML = `<tr><td colspan="${cols.length+1}" style="text-align:center;padding:40px;color:var(--text-muted)">No data</td></tr>`;
   } else {
-    tbody.innerHTML = data.rows.map(row => `<tr class="${getAdminRowClass(row)}">
+    const signature = `${currentTable}:${data.rows.slice(0, 12).map(row => JSON.stringify([row[cols[0].name], row.result, row.has_violation])).join('|')}`;
+    if (signature === renderSignatures.adminTable) return;
+    renderSignatures.adminTable = signature;
+    tbody.innerHTML = data.rows.map(row => `<tr class="${[getAdminRowClass(row), getAdminNewRowClass(row)].filter(Boolean).join(' ')}">
       ${cols.map(c => {
         const val = row[c.name];
         if (val === null || val === undefined) return '<td class="cell-null">NULL</td>';
@@ -649,6 +703,22 @@ function getAdminRowClass(row) {
     const result = String(row.result || '').toLowerCase();
     if (result === 'fail') return 'row-violation';
     if (result === 'warning') return 'row-warning';
+  }
+
+  return '';
+}
+
+function getAdminNewRowClass(row) {
+  if (currentTable === 'PollutionReading' && Number(row.reading_id) === Number(simulationMarkers.lastReadingId)) {
+    return 'row-new';
+  }
+
+  if (currentTable === 'Inspection' && Number(row.inspection_id) === Number(simulationMarkers.lastInspectionId)) {
+    return 'row-new';
+  }
+
+  if (currentTable === 'Violation' && Number(row.violation_id) === Number(simulationMarkers.lastViolationId)) {
+    return 'row-new';
   }
 
   return '';
