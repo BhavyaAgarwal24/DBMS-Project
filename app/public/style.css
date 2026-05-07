@@ -695,7 +695,7 @@ html[data-theme="light"] .er-entity {
   width: 28px; height: 28px; border-radius: 50%;
   background: var(--accent); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 700; flex-shrink: 0;
+  font-size: 14px; font-weight: 700; flex-shrink: 0;
 }
 .flow-content { flex: 1; }
 .flow-content strong { font-size: 13px; display: block; margin-bottom: 2px; }
@@ -708,9 +708,21 @@ html[data-theme="light"] .er-entity {
   animation: warnPulse 1.2s ease-in-out infinite;
 }
 
+.data-table tbody tr.row-violation {
+  background: rgba(248,113,113,0.16) !important;
+  box-shadow: inset 0 0 0 1px rgba(248,113,113,0.35);
+  animation: violationPulse 1.1s ease-in-out infinite;
+}
+
 @keyframes warnPulse {
   0% { filter: brightness(1); }
   50% { filter: brightness(1.15); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes violationPulse {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
   100% { filter: brightness(1); }
 }
 

@@ -7,6 +7,9 @@ let currentUser = null;
 let currentTable = null;
 let currentSchema = null;
 let pendingConfirmAction = null;
+let currentViewId = null;
+let simulationPollTimer = null;
+let lastSimulationSnapshot = null;
 
 const TABLE_ICONS = {
   Location:'📍', Industry:'🏭', MonitoringStation:'📡',
@@ -32,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupConfirmModal();
   setupUserManagement();
   setupSimulation();
+  checkSimulationOnLoad();
 });
 
 function setupSimulation() {
@@ -53,12 +57,61 @@ function setupSimulation() {
     btn.textContent = prev;
 
     if (res && res.success) {
-      toast(`Simulation created ${res.created} inspections (${res.warnings} warnings).`, 'success');
+      toast(`Simulation started. ${res.target} readings will be inserted live.`, 'success');
+      startSimulationPolling();
       loadDashboard();
     } else {
       toast(res?.error || 'Simulation failed', 'error');
     }
   });
+}
+
+function startSimulationPolling() {
+  if (simulationPollTimer) return;
+
+  simulationPollTimer = setInterval(async () => {
+    const res = await fetchJSON('/api/simulation/tick', { method: 'POST' });
+    if (!res || res.error) return;
+
+    const wasRunning = Boolean(lastSimulationSnapshot && lastSimulationSnapshot.running);
+    const isRunning = Boolean(res.running);
+
+    if (isRunning || wasRunning) {
+      refreshActiveSimulationViews();
+    }
+
+    if (wasRunning && !isRunning) {
+      if (res.error) {
+        toast(`Simulation stopped: ${res.error}`, 'error');
+      } else {
+        toast(`Simulation finished. Added ${res.created} readings and ${res.failures} violations.`, 'success');
+      }
+      clearInterval(simulationPollTimer);
+      simulationPollTimer = null;
+    }
+
+    lastSimulationSnapshot = res;
+  }, 1500);
+}
+
+function refreshActiveSimulationViews() {
+  if (currentViewId === 'dashboard') loadDashboard();
+  if (currentViewId === 'user-pollution') loadUserPollution();
+  if (currentViewId === 'user-inspections') loadUserInspections();
+  if (currentViewId === 'user-violations') loadUserViolations();
+  if (currentViewId === 'table' && ['PollutionReading', 'Inspection', 'Violation'].includes(currentTable)) {
+    loadTable(currentTable);
+  }
+}
+
+async function checkSimulationOnLoad() {
+  const res = await fetchJSON('/api/simulation/status');
+  if (res && !res.error) {
+    lastSimulationSnapshot = res;
+    if (res.running) {
+      startSimulationPolling();
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -248,6 +301,7 @@ function setupNavigation() {
 }
 
 function showView(viewId) {
+  currentViewId = viewId;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById(`view-${viewId}`);
   if (target) target.classList.add('active');
@@ -374,23 +428,30 @@ async function loadUserPollution() {
     method: 'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ sql: `
       SELECT pr.reading_id, ms.station_id, ms.station_type, CONCAT(l.area_name, ', ', l.city) AS location,
-        pr.reading_datetime, pr.PM25, pr.PM10, pr.NO2, pr.SO2, pr.water_ph, pr.noise_level
+        pr.reading_datetime, pr.PM25, pr.PM10, pr.NO2, pr.SO2, pr.water_ph, pr.noise_level,
+        MAX(CASE WHEN v.violation_id IS NULL THEN 0 ELSE 1 END) AS has_violation,
+        MAX(v.violation_type) AS violation_type
       FROM PollutionReading pr
       JOIN MonitoringStation ms ON pr.station_id = ms.station_id
       JOIN Location l ON ms.location_id = l.location_id
-      ORDER BY pr.reading_datetime DESC
+      LEFT JOIN Violation v ON v.reading_id = pr.reading_id
+      GROUP BY pr.reading_id, ms.station_id, ms.station_type, l.area_name, l.city,
+        pr.reading_datetime, pr.PM25, pr.PM10, pr.NO2, pr.SO2, pr.water_ph, pr.noise_level
+      ORDER BY pr.reading_id DESC
     `})
   });
   const tbody = document.getElementById('user-pollution-body');
   if (res.rows) {
     tbody.innerHTML = res.rows.map(r => {
       const severity = getSeverity(r.PM25);
-      return `<tr>
+      const hasViolation = Number(r.has_violation) === 1;
+      return `<tr class="${hasViolation ? 'row-violation' : ''}">
         <td>${r.reading_id}</td><td>${r.station_id}</td><td>${r.station_type}</td>
         <td>${r.location}</td><td>${r.reading_datetime}</td>
         <td>${fmtVal(r.PM25)}</td><td>${fmtVal(r.PM10)}</td><td>${fmtVal(r.NO2)}</td><td>${fmtVal(r.SO2)}</td>
         <td>${fmtVal(r.water_ph)}</td><td>${fmtVal(r.noise_level)}</td>
         <td><span class="badge ${severity.cls}">${severity.label}</span></td>
+        <td>${hasViolation ? `<span class="badge badge-fail">${esc(r.violation_type || 'Violation')}</span>` : '<span class="cell-null">-</span>'}</td>
       </tr>`;
     }).join('');
   }
@@ -410,7 +471,8 @@ async function loadUserInspections() {
   if (res.rows) {
     tbody.innerHTML = res.rows.map(r => {
       const isWarning = String(r.result).toLowerCase() === 'warning';
-      const trClass = isWarning ? 'row-warning' : '';
+      const isFail = String(r.result).toLowerCase() === 'fail';
+      const trClass = isFail ? 'row-violation' : (isWarning ? 'row-warning' : '');
       return `<tr class="${trClass}">
         <td>${r.inspection_id}</td><td>${r.industry_name}</td><td>${r.inspection_date}</td>
         <td>${r.inspector_name}</td><td title="${esc(r.remarks)}">${esc(r.remarks)}</td>
@@ -564,7 +626,7 @@ function renderTable(schema, data) {
   if (data.rows.length === 0) {
     tbody.innerHTML = `<tr><td colspan="${cols.length+1}" style="text-align:center;padding:40px;color:var(--text-muted)">No data</td></tr>`;
   } else {
-    tbody.innerHTML = data.rows.map(row => `<tr>
+    tbody.innerHTML = data.rows.map(row => `<tr class="${getAdminRowClass(row)}">
       ${cols.map(c => {
         const val = row[c.name];
         if (val === null || val === undefined) return '<td class="cell-null">NULL</td>';
@@ -576,6 +638,20 @@ function renderTable(schema, data) {
     </tr>`).join('');
   }
   footer.innerHTML = `Showing ${data.rows.length} of ${data.total} rows`;
+}
+
+function getAdminRowClass(row) {
+  if (currentTable === 'PollutionReading' && Number(row.has_violation) === 1) {
+    return 'row-violation';
+  }
+
+  if (currentTable === 'Inspection') {
+    const result = String(row.result || '').toLowerCase();
+    if (result === 'fail') return 'row-violation';
+    if (result === 'warning') return 'row-warning';
+  }
+
+  return '';
 }
 
 async function deleteRow(table, pkCol, pkVal) {

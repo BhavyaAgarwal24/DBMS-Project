@@ -107,6 +107,22 @@ async function createTables(pool) {
         FOREIGN KEY (reading_id) REFERENCES PollutionReading(reading_id)
         ON DELETE CASCADE ON UPDATE CASCADE
     ) ENGINE=InnoDB`,
+    `CREATE TABLE IF NOT EXISTS SimulationRun (
+      simulation_id INT PRIMARY KEY AUTO_INCREMENT,
+      status VARCHAR(20) NOT NULL,
+      target_count INT NOT NULL,
+      created_count INT NOT NULL DEFAULT 0,
+      warning_count INT NOT NULL DEFAULT 0,
+      failure_count INT NOT NULL DEFAULT 0,
+      delay_ms INT NOT NULL DEFAULT 1200,
+      last_reading_id INT NULL,
+      last_inspection_id INT NULL,
+      last_violation_id INT NULL,
+      error_message TEXT NULL,
+      started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      finished_at DATETIME NULL,
+      CONSTRAINT chk_simulation_status CHECK (status IN ('Running', 'Completed', 'Failed'))
+    ) ENGINE=InnoDB`,
   ];
 
   for (const statement of statements) {
