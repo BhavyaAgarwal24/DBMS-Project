@@ -50,7 +50,7 @@ function setupSimulation() {
     const res = await fetchJSON('/api/simulation/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ count: 20 }),
+      body: JSON.stringify({ count: 60, delayMs: 1000 }),
     });
 
     btn.disabled = false;
