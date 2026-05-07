@@ -23,17 +23,17 @@ const renderSignatures = {
 };
 
 const TABLE_ICONS = {
-  Location:'📍', Industry:'🏭', MonitoringStation:'📡',
-  PollutionReading:'🌫️', Inspection:'🔍', Violation:'⚠️', Users:'👥',
+  Location: '📍', Industry: '🏭', MonitoringStation: '📡',
+  PollutionReading: '🌫️', Inspection: '🔍', Violation: '⚠️', Users: '👥',
 };
 
 const PRESETS = [
-  { label:'All Industries + Locations', sql:`SELECT i.industry_id, i.industry_name, i.industry_type, i.license_number, l.area_name, l.city\nFROM Industry i\nJOIN Location l ON i.location_id = l.location_id\nORDER BY i.industry_name;` },
-  { label:'Pending Violations', sql:`SELECT v.violation_id, ind.industry_name, v.violation_type, v.penalty_amount, v.status\nFROM Violation v\nJOIN Industry ind ON v.industry_id = ind.industry_id\nWHERE v.status = 'Pending'\nORDER BY v.penalty_amount DESC;` },
-  { label:'Failed Inspections', sql:`SELECT ins.inspection_id, ind.industry_name, ins.inspection_date, ins.inspector_name, ins.remarks\nFROM Inspection ins\nJOIN Industry ind ON ins.industry_id = ind.industry_id\nWHERE ins.result = 'Fail'\nORDER BY ins.inspection_date;` },
-  { label:'Avg PM2.5 by Location', sql:`SELECT l.area_name, l.city,\n  ROUND(AVG(pr.PM25), 2) AS avg_PM25,\n  ROUND(AVG(pr.PM10), 2) AS avg_PM10\nFROM PollutionReading pr\nJOIN MonitoringStation ms ON pr.station_id = ms.station_id\nJOIN Location l ON ms.location_id = l.location_id\nWHERE pr.PM25 IS NOT NULL\nGROUP BY l.location_id\nORDER BY avg_PM25 DESC;` },
-  { label:'Violation Totals per Industry', sql:`SELECT ind.industry_name,\n  COUNT(v.violation_id) AS total_violations,\n  SUM(v.penalty_amount) AS total_penalty\nFROM Industry ind\nJOIN Violation v ON ind.industry_id = v.industry_id\nGROUP BY ind.industry_id\nHAVING COUNT(v.violation_id) > 1\nORDER BY total_penalty DESC;` },
-  { label:'Show All Tables', sql:`SELECT table_name AS name\nFROM information_schema.tables\nWHERE table_schema = DATABASE()\nORDER BY table_name;` },
+  { label: 'All Industries + Locations', sql: `SELECT i.industry_id, i.industry_name, i.industry_type, i.license_number, l.area_name, l.city\nFROM Industry i\nJOIN Location l ON i.location_id = l.location_id\nORDER BY i.industry_name;` },
+  { label: 'Pending Violations', sql: `SELECT v.violation_id, ind.industry_name, v.violation_type, v.penalty_amount, v.status\nFROM Violation v\nJOIN Industry ind ON v.industry_id = ind.industry_id\nWHERE v.status = 'Pending'\nORDER BY v.penalty_amount DESC;` },
+  { label: 'Failed Inspections', sql: `SELECT ins.inspection_id, ind.industry_name, ins.inspection_date, ins.inspector_name, ins.remarks\nFROM Inspection ins\nJOIN Industry ind ON ins.industry_id = ind.industry_id\nWHERE ins.result = 'Fail'\nORDER BY ins.inspection_date;` },
+  { label: 'Avg PM2.5 by Location', sql: `SELECT l.area_name, l.city,\n  ROUND(AVG(pr.PM25), 2) AS avg_PM25,\n  ROUND(AVG(pr.PM10), 2) AS avg_PM10\nFROM PollutionReading pr\nJOIN MonitoringStation ms ON pr.station_id = ms.station_id\nJOIN Location l ON ms.location_id = l.location_id\nWHERE pr.PM25 IS NOT NULL\nGROUP BY l.location_id\nORDER BY avg_PM25 DESC;` },
+  { label: 'Violation Totals per Industry', sql: `SELECT ind.industry_name,\n  COUNT(v.violation_id) AS total_violations,\n  SUM(v.penalty_amount) AS total_penalty\nFROM Industry ind\nJOIN Violation v ON ind.industry_id = v.industry_id\nGROUP BY ind.industry_id\nHAVING COUNT(v.violation_id) > 1\nORDER BY total_penalty DESC;` },
+  { label: 'Show All Tables', sql: `SELECT table_name AS name\nFROM information_schema.tables\nWHERE table_schema = DATABASE()\nORDER BY table_name;` },
 ];
 
 // ─── Init ───────────────────────────────────────────────────
@@ -372,20 +372,20 @@ async function loadDashboard() {
   const isAdmin = currentUser && currentUser.role === 'admin';
 
   let cards = [
-    { label:'Industries', value:data.industries, color:'blue' },
-    { label:'Monitoring Stations', value:data.stations, color:'green' },
-    { label:'Pollution Readings', value:data.readings, color:'yellow' },
-    { label:'Total Inspections', value:data.inspections, color:'accent' },
-    { label:'Failed Inspections', value:data.failedInspections, color:'red' },
-    { label:'Total Violations', value:data.violations, color:'orange' },
-    { label:'Pending Violations', value:data.pendingViolations, color:'red' },
-    { label:'Resolved Violations', value:data.resolvedViolations, color:'green' },
-    { label:'Total Penalties', value:`₹${Number(data.totalPenalties).toLocaleString('en-IN')}`, color:'yellow' },
+    { label: 'Industries', value: data.industries, color: 'blue' },
+    { label: 'Monitoring Stations', value: data.stations, color: 'green' },
+    { label: 'Pollution Readings', value: data.readings, color: 'yellow' },
+    { label: 'Total Inspections', value: data.inspections, color: 'accent' },
+    { label: 'Failed Inspections', value: data.failedInspections, color: 'red' },
+    { label: 'Total Violations', value: data.violations, color: 'orange' },
+    { label: 'Pending Violations', value: data.pendingViolations, color: 'red' },
+    { label: 'Resolved Violations', value: data.resolvedViolations, color: 'green' },
+    { label: 'Total Penalties', value: `₹${Number(data.totalPenalties).toLocaleString('en-IN')}`, color: 'yellow' },
   ];
 
   if (isAdmin) {
-    cards.unshift({ label:'Locations', value:data.locations, color:'accent' });
-    cards.push({ label:'Registered Users', value:data.totalUsers, color:'blue' });
+    cards.unshift({ label: 'Locations', value: data.locations, color: 'accent' });
+    cards.push({ label: 'Registered Users', value: data.totalUsers, color: 'blue' });
   }
 
   grid.innerHTML = cards.map(c => `
@@ -402,7 +402,7 @@ async function loadDashboard() {
     polluted.innerHTML = `<div class="bar-chart">${data.topPolluted.map(p => `
       <div class="bar-row">
         <span class="bar-label">${p.city}</span>
-        <div class="bar-track"><div class="bar-fill air" style="width:${(p.avg_pm25/maxPM*100)}%">${p.avg_pm25}</div></div>
+        <div class="bar-track"><div class="bar-fill air" style="width:${(p.avg_pm25 / maxPM * 100)}%">${p.avg_pm25}</div></div>
       </div>`).join('')}</div>`;
   } else {
     polluted.innerHTML = '<div class="result-placeholder">No PM2.5 data</div>';
@@ -416,7 +416,7 @@ async function loadDashboard() {
       <div class="bar-chart">${data.violationsByType.map(v => `
       <div class="bar-row">
         <span class="bar-label">${v.violation_type}</span>
-        <div class="bar-track"><div class="bar-fill ${v.violation_type.toLowerCase()}" style="width:${(v.count/maxV*100)}%">${v.count} (₹${Number(v.total_penalty).toLocaleString('en-IN')})</div></div>
+        <div class="bar-track"><div class="bar-fill ${v.violation_type.toLowerCase()}" style="width:${(v.count / maxV * 100)}%">${v.count} (₹${Number(v.total_penalty).toLocaleString('en-IN')})</div></div>
       </div>`).join('')}</div>`;
   }
 
@@ -428,7 +428,7 @@ async function loadDashboard() {
       <div class="bar-chart">${data.violationsByStatus.map(v => `
       <div class="bar-row">
         <span class="bar-label">${v.status}</span>
-        <div class="bar-track"><div class="bar-fill ${v.status.toLowerCase()}" style="width:${(v.count/maxS*100)}%">${v.count}</div></div>
+        <div class="bar-track"><div class="bar-fill ${v.status.toLowerCase()}" style="width:${(v.count / maxS * 100)}%">${v.count}</div></div>
       </div>`).join('')}</div>`;
   }
 
@@ -451,8 +451,9 @@ async function loadDashboard() {
 // ═══════════════════════════════════════════════════════════
 async function loadUserPollution() {
   const res = await fetchJSON('/api/query', {
-    method: 'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sql: `
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sql: `
       SELECT pr.reading_id, ms.station_id, ms.station_type, CONCAT(l.area_name, ', ', l.city) AS location,
         pr.reading_datetime, pr.PM25, pr.PM10, pr.NO2, pr.SO2, pr.water_ph, pr.noise_level,
         MAX(CASE WHEN v.violation_id IS NULL THEN 0 ELSE 1 END) AS has_violation,
@@ -492,8 +493,9 @@ async function loadUserPollution() {
 
 async function loadUserInspections() {
   const res = await fetchJSON('/api/query', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sql: `
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sql: `
       SELECT ins.inspection_id, ind.industry_name, ins.inspection_date,
         ins.inspector_name, ins.remarks, ins.result
       FROM Inspection ins JOIN Industry ind ON ins.industry_id = ind.industry_id
@@ -523,11 +525,14 @@ async function loadUserInspections() {
 
 async function loadUserViolations() {
   const res = await fetchJSON('/api/query', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sql: `
-      SELECT v.violation_id, ind.industry_name, v.violation_type,
-        v.penalty_amount, v.status
-      FROM Violation v JOIN Industry ind ON v.industry_id = ind.industry_id
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sql: `
+      SELECT v.violation_id, ind.industry_name, v.reading_id, pr.station_id,
+        v.violation_type, v.penalty_amount, v.status
+      FROM Violation v
+      JOIN Industry ind ON v.industry_id = ind.industry_id
+      LEFT JOIN PollutionReading pr ON v.reading_id = pr.reading_id
       ORDER BY v.violation_id DESC
     `})
   });
@@ -540,11 +545,11 @@ async function loadUserViolations() {
     const headRow = document.querySelector('#view-user-violations thead tr');
     if (headRow) {
       headRow.innerHTML = canManage
-        ? '<th>ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th><th>Actions</th>'
-        : '<th>ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th>';
+        ? '<th>ID</th><th>Reading ID</th><th>Station ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th><th>Actions</th>'
+        : '<th>ID</th><th>Reading ID</th><th>Station ID</th><th>Industry</th><th>Type</th><th>Penalty (INR)</th><th>Status</th>';
     }
     tbody.innerHTML = res.rows.map(r => `<tr class="${Number(r.violation_id) === Number(simulationMarkers.lastViolationId) ? 'row-new row-violation' : ''}">
-      <td>${r.violation_id}</td><td>${r.industry_name}</td><td>${r.violation_type}</td>
+      <td>${r.violation_id}</td><td>${r.reading_id}</td><td>${r.station_id}</td><td>${r.industry_name}</td><td>${r.violation_type}</td>
       <td>₹${Number(r.penalty_amount).toLocaleString('en-IN')}</td>
       <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
       ${canManage ? `<td class="cell-actions">${renderViolationActionButtons(r)}</td>` : ''}
@@ -554,8 +559,9 @@ async function loadUserViolations() {
 
 async function loadUserIndustries() {
   const res = await fetchJSON('/api/query', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ sql: `
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sql: `
       SELECT i.industry_id, i.industry_name, i.industry_type, i.license_number,
         l.area_name, l.city
       FROM Industry i JOIN Location l ON i.location_id = l.location_id
@@ -602,7 +608,7 @@ function setupUserManagement() {
       return;
     }
     const res = await fetchJSON('/api/users', {
-      method:'POST', headers:{'Content-Type':'application/json'},
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (res.success) {
@@ -639,7 +645,7 @@ async function deleteUser(id) {
     message: 'Delete this user account? This action cannot be undone.',
     confirmText: 'Delete User',
     onConfirm: async () => {
-      const res = await fetchJSON(`/api/users/${id}`, { method:'DELETE' });
+      const res = await fetchJSON(`/api/users/${id}`, { method: 'DELETE' });
       if (res.success) {
         toast('User deleted', 'success');
         loadUsers();
@@ -661,7 +667,7 @@ async function loadTable(name, options = {}) {
     renderTable(currentSchema, dataRes);
     return;
   }
-  document.getElementById('table-view-title').textContent = `${TABLE_ICONS[name]||'📄'} ${name}`;
+  document.getElementById('table-view-title').textContent = `${TABLE_ICONS[name] || '📄'} ${name}`;
   const [schemaRes, dataRes] = await Promise.all([
     fetchJSON(`/api/tables/${name}/schema`),
     fetchJSON(`/api/tables/${name}/data`),
@@ -682,19 +688,19 @@ function renderTable(schema, data) {
 
   if (data.rows.length === 0) {
     renderSignatures.adminTable = 'empty';
-    tbody.innerHTML = `<tr><td colspan="${cols.length+1}" style="text-align:center;padding:40px;color:var(--text-muted)">No data</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${cols.length + 1}" style="text-align:center;padding:40px;color:var(--text-muted)">No data</td></tr>`;
   } else {
     const signature = `${currentTable}:${data.rows.slice(0, 12).map(row => JSON.stringify([row[cols[0].name], row.result, row.has_violation])).join('|')}`;
     if (signature === renderSignatures.adminTable) return;
     renderSignatures.adminTable = signature;
     tbody.innerHTML = data.rows.map(row => `<tr class="${[getAdminRowClass(row), getAdminNewRowClass(row)].filter(Boolean).join(' ')}">
       ${cols.map(c => {
-        const val = row[c.name];
-        if (val === null || val === undefined) return '<td class="cell-null">NULL</td>';
-        return `<td title="${String(val)}">${String(val)}</td>`;
-      }).join('')}
+      const val = row[c.name];
+      if (val === null || val === undefined) return '<td class="cell-null">NULL</td>';
+      return `<td title="${String(val)}">${String(val)}</td>`;
+    }).join('')}
       <td class="cell-actions">
-        ${pkCol ? `<button title="Delete" onclick="deleteRow('${currentTable}','${pkCol.name}',${typeof row[pkCol.name]==='string'?`'${row[pkCol.name]}'`:row[pkCol.name]})">🗑️</button>` : ''}
+        ${pkCol ? `<button title="Delete" onclick="deleteRow('${currentTable}','${pkCol.name}',${typeof row[pkCol.name] === 'string' ? `'${row[pkCol.name]}'` : row[pkCol.name]})">🗑️</button>` : ''}
       </td>
     </tr>`).join('');
   }
@@ -738,11 +744,11 @@ async function deleteRow(table, pkCol, pkVal) {
     confirmText: 'Delete Row',
     onConfirm: async () => {
       const res = await fetchJSON(`/api/tables/${table}/delete`, {
-        method:'DELETE', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ pkColumn:pkCol, pkValue:pkVal }),
+        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pkColumn: pkCol, pkValue: pkVal }),
       });
-      if (res.success) { toast('Row deleted','success'); loadTable(table); loadDashboard(); }
-      else toast(res.error||'Delete failed','error');
+      if (res.success) { toast('Row deleted', 'success'); loadTable(table); loadDashboard(); }
+      else toast(res.error || 'Delete failed', 'error');
     },
   });
 }
@@ -783,7 +789,7 @@ function openInsertModal() {
         : (c.name.includes('datetime') ? 'datetime-local' : (c.name.includes('date') ? 'date' : 'text'));
       inputHtml = `<input type="${type}" name="${c.name}" placeholder="${placeholder}" ${required} />`;
     }
-    return `<div class="form-group"><label>${c.name} <span style="color:var(--text-muted);font-weight:400;text-transform:none">(${c.type}${c.notnull?', NOT NULL':''})</span></label>${inputHtml}</div>`;
+    return `<div class="form-group"><label>${c.name} <span style="color:var(--text-muted);font-weight:400;text-transform:none">(${c.type}${c.notnull ? ', NOT NULL' : ''})</span></label>${inputHtml}</div>`;
   }).join('');
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -799,11 +805,11 @@ async function submitInsert() {
     if (input) { columns.push(c.name); values.push(input.value); }
   });
   const res = await fetchJSON(`/api/tables/${currentTable}/insert`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ columns, values }),
   });
-  if (res.success) { toast(`Row inserted (ID: ${res.lastInsertId})`,'success'); closeModal(); loadTable(currentTable); loadDashboard(); }
-  else toast(res.error||'Insert failed','error');
+  if (res.success) { toast(`Row inserted (ID: ${res.lastInsertId})`, 'success'); closeModal(); loadTable(currentTable); loadDashboard(); }
+  else toast(res.error || 'Insert failed', 'error');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -813,10 +819,10 @@ function setupConsole() {
   const input = document.getElementById('sql-input');
   document.getElementById('btn-run-sql').addEventListener('click', () => runSQL());
   document.getElementById('btn-clear-sql').addEventListener('click', () => { input.value = ''; input.focus(); });
-  input.addEventListener('keydown', (e) => { if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { e.preventDefault(); runSQL(); }});
+  input.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runSQL(); } });
 
   const chipsContainer = document.getElementById('preset-chips');
-  chipsContainer.innerHTML = PRESETS.map((p,i) => `<span class="preset-chip" data-idx="${i}">${p.label}</span>`).join('');
+  chipsContainer.innerHTML = PRESETS.map((p, i) => `<span class="preset-chip" data-idx="${i}">${p.label}</span>`).join('');
   chipsContainer.addEventListener('click', (e) => {
     const chip = e.target.closest('.preset-chip');
     if (!chip) return;
@@ -831,7 +837,7 @@ async function runSQL() {
   const resultDiv = document.getElementById('console-result');
   resultDiv.innerHTML = '<div class="result-placeholder">Running...</div>';
   const res = await fetchJSON('/api/query', {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sql }),
   });
   if (res.error) { resultDiv.innerHTML = `<div class="result-error">❌ ${esc(res.error)}</div>`; return; }
@@ -843,13 +849,13 @@ async function runSQL() {
       <table class="data-table">
         <thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
         <tbody>${res.rows.map(row => `<tr>${cols.map(c => {
-          const v = row[c];
-          if (v===null||v===undefined) return '<td class="cell-null">NULL</td>';
-          return `<td>${esc(String(v))}</td>`;
-        }).join('')}</tr>`).join('')}</tbody>
+    const v = row[c];
+    if (v === null || v === undefined) return '<td class="cell-null">NULL</td>';
+    return `<td>${esc(String(v))}</td>`;
+  }).join('')}</tr>`).join('')}</tbody>
       </table>
     </div>
-    <div class="result-meta">${res.rowCount} row${res.rowCount!==1?'s':''} returned</div>`;
+    <div class="result-meta">${res.rowCount} row${res.rowCount !== 1 ? 's' : ''} returned</div>`;
 }
 
 function renderViolationActionButtons(row) {
@@ -899,8 +905,8 @@ async function fetchJSON(url, opts = {}) {
 
     throw new Error(message);
   } catch (err) {
-    toast(err.message,'error');
-    return { error:err.message };
+    toast(err.message, 'error');
+    return { error: err.message };
   }
 }
 
@@ -916,15 +922,15 @@ function fmtVal(v) {
 }
 
 function getSeverity(pm25) {
-  if (pm25 === null || pm25 === undefined) return { label:'N/A', cls:'' };
-  if (pm25 <= 30) return { label:'Good', cls:'badge-pass' };
-  if (pm25 <= 60) return { label:'Moderate', cls:'badge-warning' };
-  if (pm25 <= 90) return { label:'Unhealthy', cls:'badge-fail' };
-  if (pm25 <= 120) return { label:'Very Unhealthy', cls:'badge-fail' };
-  return { label:'Hazardous', cls:'badge-fail' };
+  if (pm25 === null || pm25 === undefined) return { label: 'N/A', cls: '' };
+  if (pm25 <= 30) return { label: 'Good', cls: 'badge-pass' };
+  if (pm25 <= 60) return { label: 'Moderate', cls: 'badge-warning' };
+  if (pm25 <= 90) return { label: 'Unhealthy', cls: 'badge-fail' };
+  if (pm25 <= 120) return { label: 'Very Unhealthy', cls: 'badge-fail' };
+  return { label: 'Hazardous', cls: 'badge-fail' };
 }
 
-function toast(msg, type='success') {
+function toast(msg, type = 'success') {
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
   el.textContent = msg;

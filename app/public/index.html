@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pollution Monitoring System — DBMS Project</title>
-  <meta name="description" content="Industrial Pollution Monitoring System demonstrating 3-Tier Architecture with Admin and User portals." />
+  <meta name="description"
+    content="Industrial Pollution Monitoring System demonstrating 3-Tier Architecture with Admin and User portals." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script>
@@ -12,6 +14,7 @@
   </script>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -124,7 +127,7 @@
         <a class="nav-item active" data-view="dashboard" id="nav-dashboard">
           <span class="nav-icon">📊</span><span class="nav-text">Dashboard</span>
         </a>
-<!-- Admin-only nav items -->
+        <!-- Admin-only nav items -->
         <div id="admin-nav">
           <a class="nav-item" data-view="console" id="nav-console">
             <span class="nav-icon">⌨️</span><span class="nav-text">SQL Console</span>
@@ -207,17 +210,23 @@
         <div class="teacher-layout">
           <section class="teacher-hero">
             <h3>Industrial Pollution Monitoring System</h3>
-            <p>This project stores industries, their locations, monitoring stations, pollution readings, inspections, violations, and users. The main DBMS idea is that every real-world entity is represented as a table, connected using primary keys and foreign keys.</p>
+            <p>This project stores industries, their locations, monitoring stations, pollution readings, inspections,
+              violations, and users. The main DBMS idea is that every real-world entity is represented as a table,
+              connected using primary keys and foreign keys.</p>
           </section>
 
           <section class="teacher-grid">
             <div class="panel">
               <h3 class="panel-title">Project Aim and Problem</h3>
               <ul class="teacher-list">
-                <li><strong>Aim:</strong> build a centralized relational database for industrial pollution monitoring and compliance management.</li>
-                <li><strong>Problem:</strong> pollution readings, inspections, and violations are hard to track when they are kept in scattered files or manual records.</li>
-                <li><strong>Solution:</strong> store industries, locations, stations, readings, inspections, and penalties in linked MySQL tables.</li>
-                <li><strong>DBMS focus:</strong> ER modelling, relational mapping, normalization, constraints, joins, aggregates, views, triggers, procedures, cursors, and transactions.</li>
+                <li><strong>Aim:</strong> build a centralized relational database for industrial pollution monitoring
+                  and compliance management.</li>
+                <li><strong>Problem:</strong> pollution readings, inspections, and violations are hard to track when
+                  they are kept in scattered files or manual records.</li>
+                <li><strong>Solution:</strong> store industries, locations, stations, readings, inspections, and
+                  penalties in linked MySQL tables.</li>
+                <li><strong>DBMS focus:</strong> ER modelling, relational mapping, normalization, constraints, joins,
+                  aggregates, views, triggers, procedures, cursors, and transactions.</li>
               </ul>
             </div>
 
@@ -293,16 +302,22 @@
               <div class="er-link link-industry-violation">1:N</div>
               <div class="er-link link-reading-violation">1:N</div>
             </div>
-            <p class="teacher-note">Explain this as: Location is the parent table. Industries and monitoring stations belong to a location. Stations generate readings. Industries are inspected. Violations connect both the industry responsible and the reading that caused the violation.</p>
+            <p class="teacher-note">Explain this as: Location is the parent table. Industries and monitoring stations
+              belong to a location. Stations generate readings. Industries are inspected. Violations connect both the
+              industry responsible and the reading that caused the violation.</p>
           </section>
 
           <section class="panel">
             <h3 class="panel-title">Overall Working</h3>
             <div class="teacher-flow">
-              <div><strong>1. User logs in</strong><span>The Users table checks username, password, and role.</span></div>
-              <div><strong>2. Browser calls API</strong><span>The frontend sends requests like GET /api/tables/Industry/data.</span></div>
-              <div><strong>3. Server runs SQL</strong><span>Node.js creates SELECT, INSERT, DELETE, and dashboard aggregate queries.</span></div>
-              <div><strong>4. MySQL returns rows</strong><span>The result set is sent back as JSON and shown as tables/charts.</span></div>
+              <div><strong>1. User logs in</strong><span>The Users table checks username, password, and role.</span>
+              </div>
+              <div><strong>2. Browser calls API</strong><span>The frontend sends requests like GET
+                  /api/tables/Industry/data.</span></div>
+              <div><strong>3. Server runs SQL</strong><span>Node.js creates SELECT, INSERT, DELETE, and dashboard
+                  aggregate queries.</span></div>
+              <div><strong>4. MySQL returns rows</strong><span>The result set is sent back as JSON and shown as
+                  tables/charts.</span></div>
             </div>
           </section>
 
@@ -311,16 +326,56 @@
             <div class="table-container">
               <table class="data-table">
                 <thead>
-                  <tr><th>Table</th><th>Primary Key</th><th>Main Purpose</th><th>Important Foreign Keys</th></tr>
+                  <tr>
+                    <th>Table</th>
+                    <th>Primary Key</th>
+                    <th>Main Purpose</th>
+                    <th>Important Foreign Keys</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Users</td><td>user_id</td><td>Stores login accounts and role-based access.</td><td>None</td></tr>
-                  <tr><td>Location</td><td>location_id</td><td>Stores area and city details.</td><td>None</td></tr>
-                  <tr><td>Industry</td><td>industry_id</td><td>Stores industry details and license number.</td><td>location_id references Location</td></tr>
-                  <tr><td>MonitoringStation</td><td>station_id</td><td>Stores air, water, noise, or combined stations.</td><td>location_id references Location</td></tr>
-                  <tr><td>PollutionReading</td><td>reading_id</td><td>Stores measured PM2.5, PM10, pH, noise, and gas values.</td><td>station_id references MonitoringStation</td></tr>
-                  <tr><td>Inspection</td><td>inspection_id</td><td>Stores official inspection reports for industries.</td><td>industry_id references Industry</td></tr>
-                  <tr><td>Violation</td><td>violation_id</td><td>Stores penalties raised from readings and industries.</td><td>industry_id references Industry; reading_id references PollutionReading</td></tr>
+                  <tr>
+                    <td>Users</td>
+                    <td>user_id</td>
+                    <td>Stores login accounts and role-based access.</td>
+                    <td>None</td>
+                  </tr>
+                  <tr>
+                    <td>Location</td>
+                    <td>location_id</td>
+                    <td>Stores area and city details.</td>
+                    <td>None</td>
+                  </tr>
+                  <tr>
+                    <td>Industry</td>
+                    <td>industry_id</td>
+                    <td>Stores industry details and license number.</td>
+                    <td>location_id references Location</td>
+                  </tr>
+                  <tr>
+                    <td>MonitoringStation</td>
+                    <td>station_id</td>
+                    <td>Stores air, water, noise, or combined stations.</td>
+                    <td>location_id references Location</td>
+                  </tr>
+                  <tr>
+                    <td>PollutionReading</td>
+                    <td>reading_id</td>
+                    <td>Stores measured PM2.5, PM10, pH, noise, and gas values.</td>
+                    <td>station_id references MonitoringStation</td>
+                  </tr>
+                  <tr>
+                    <td>Inspection</td>
+                    <td>inspection_id</td>
+                    <td>Stores official inspection reports for industries.</td>
+                    <td>industry_id references Industry</td>
+                  </tr>
+                  <tr>
+                    <td>Violation</td>
+                    <td>violation_id</td>
+                    <td>Stores penalties raised from readings and industries.</td>
+                    <td>industry_id references Industry; reading_id references PollutionReading</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -330,10 +385,14 @@
             <div class="panel">
               <h3 class="panel-title">Normalization Explanation</h3>
               <ul class="teacher-list">
-                <li><strong>1NF:</strong> every field stores atomic values; there are no repeating groups. Pollution values are separate columns like PM25, PM10, water_ph, and noise_level.</li>
-                <li><strong>2NF:</strong> every table uses a single-column primary key, so non-key attributes depend on the full key and there are no partial dependencies.</li>
-                <li><strong>3NF:</strong> non-key attributes depend only on the primary key. For example, city is kept in Location, not repeated inside Industry.</li>
-                <li><strong>Result:</strong> lower redundancy, fewer update anomalies, and cleaner joins between related tables.</li>
+                <li><strong>1NF:</strong> every field stores atomic values; there are no repeating groups. Pollution
+                  values are separate columns like PM25, PM10, water_ph, and noise_level.</li>
+                <li><strong>2NF:</strong> every table uses a single-column primary key, so non-key attributes depend on
+                  the full key and there are no partial dependencies.</li>
+                <li><strong>3NF:</strong> non-key attributes depend only on the primary key. For example, city is kept
+                  in Location, not repeated inside Industry.</li>
+                <li><strong>Result:</strong> lower redundancy, fewer update anomalies, and cleaner joins between related
+                  tables.</li>
               </ul>
             </div>
 
@@ -355,11 +414,16 @@
               <h3 class="panel-title">Key DBMS Concepts Used</h3>
               <ul class="teacher-list">
                 <li><strong>Primary Key:</strong> uniquely identifies each row, such as industry_id in Industry.</li>
-                <li><strong>Foreign Key:</strong> connects two tables, such as Industry.location_id to Location.location_id.</li>
-                <li><strong>Normalization:</strong> repeated data is separated into related tables instead of one large table.</li>
-                <li><strong>Constraints:</strong> CHECK, UNIQUE, NOT NULL, and foreign keys protect data correctness.</li>
-                <li><strong>CRUD:</strong> admin can create, read, update, and delete records using SQL through the backend.</li>
-                <li><strong>Aggregate Queries:</strong> dashboard counts, sums, averages, GROUP BY, and ORDER BY summarize data.</li>
+                <li><strong>Foreign Key:</strong> connects two tables, such as Industry.location_id to
+                  Location.location_id.</li>
+                <li><strong>Normalization:</strong> repeated data is separated into related tables instead of one large
+                  table.</li>
+                <li><strong>Constraints:</strong> CHECK, UNIQUE, NOT NULL, and foreign keys protect data correctness.
+                </li>
+                <li><strong>CRUD:</strong> admin can create, read, update, and delete records using SQL through the
+                  backend.</li>
+                <li><strong>Aggregate Queries:</strong> dashboard counts, sums, averages, GROUP BY, and ORDER BY
+                  summarize data.</li>
               </ul>
             </div>
 
@@ -400,8 +464,10 @@ GROUP BY l.city;</code></pre>
                 <li><strong>DDL:</strong> CREATE TABLE statements define entities, keys, constraints, and cascades.</li>
                 <li><strong>DML:</strong> INSERT, UPDATE, and DELETE manage sample data and admin operations.</li>
                 <li><strong>DQL:</strong> SELECT queries retrieve data for tables, dashboards, and reports.</li>
-                <li><strong>JOINs:</strong> combine Industry with Location, Violation with PollutionReading, and station readings with city details.</li>
-                <li><strong>Aggregates:</strong> COUNT, SUM, AVG, MAX, GROUP BY, and HAVING create summaries like total penalties and average PM2.5.</li>
+                <li><strong>JOINs:</strong> combine Industry with Location, Violation with PollutionReading, and station
+                  readings with city details.</li>
+                <li><strong>Aggregates:</strong> COUNT, SUM, AVG, MAX, GROUP BY, and HAVING create summaries like total
+                  penalties and average PM2.5.</li>
                 <li><strong>Views:</strong> report-oriented views summarize pollution and compliance data.</li>
               </ul>
             </div>
@@ -409,11 +475,16 @@ GROUP BY l.city;</code></pre>
             <div class="panel">
               <h3 class="panel-title">Procedural SQL Layer</h3>
               <ul class="teacher-list">
-                <li><strong>Trigger:</strong> trg_detect_violation runs after a new PollutionReading and auto-creates Violation rows when PM2.5 &gt; 100, water pH &lt; 5, or noise &gt; 85 dB.</li>
-                <li><strong>Procedures:</strong> sp_generate_pollution_report, sp_record_inspection, and sp_safe_insert_industry encapsulate common operations.</li>
-                <li><strong>Functions:</strong> fn_pollution_severity and fn_water_quality classify pollution readings into meaningful labels.</li>
-                <li><strong>Cursors:</strong> inspection and city dashboard procedures process row-by-row summaries.</li>
-                <li><strong>Exception handling:</strong> duplicate license, invalid location, invalid industry, and SQL errors are handled with messages or rollback.</li>
+                <li><strong>Trigger:</strong> trg_detect_violation runs after a new PollutionReading and auto-creates
+                  Violation rows when PM2.5 &gt; 100, water pH &lt; 5, or noise &gt; 85 dB.</li>
+                <li><strong>Procedures:</strong> sp_generate_pollution_report, sp_record_inspection, and
+                  sp_safe_insert_industry encapsulate common operations.</li>
+                <li><strong>Functions:</strong> fn_pollution_severity and fn_water_quality classify pollution readings
+                  into meaningful labels.</li>
+                <li><strong>Cursors:</strong> inspection and city dashboard procedures process row-by-row summaries.
+                </li>
+                <li><strong>Exception handling:</strong> duplicate license, invalid location, invalid industry, and SQL
+                  errors are handled with messages or rollback.</li>
               </ul>
             </div>
           </section>
@@ -424,9 +495,11 @@ GROUP BY l.city;</code></pre>
               <ul class="teacher-list">
                 <li><strong>Atomicity:</strong> inspection recording either fully inserts or rolls back on error.</li>
                 <li><strong>Consistency:</strong> PK, FK, CHECK, UNIQUE, and trigger rules keep the database valid.</li>
-                <li><strong>Isolation:</strong> concurrent users should not interfere with each other's transaction state.</li>
+                <li><strong>Isolation:</strong> concurrent users should not interfere with each other's transaction
+                  state.</li>
                 <li><strong>Durability:</strong> after COMMIT, changes remain saved in MySQL.</li>
-                <li><strong>Example:</strong> sp_resolve_violations updates pending violations inside a transaction and uses ROLLBACK when needed.</li>
+                <li><strong>Example:</strong> sp_resolve_violations updates pending violations inside a transaction and
+                  uses ROLLBACK when needed.</li>
               </ul>
             </div>
 
@@ -446,7 +519,7 @@ GROUP BY l.city;</code></pre>
           </section>
         </div>
       </section>
-<!-- ── SQL Console (Admin) ─────────────────── -->
+      <!-- ── SQL Console (Admin) ─────────────────── -->
       <section class="view" id="view-console">
         <div class="view-header">
           <h2>SQL Console</h2>
@@ -488,7 +561,14 @@ GROUP BY l.city;</code></pre>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Username</th><th>Full Name</th><th>Role</th><th>Created</th><th>Actions</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
             </thead>
             <tbody id="users-table-body"></tbody>
           </table>
@@ -572,7 +652,21 @@ GROUP BY l.city;</code></pre>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Station</th><th>Type</th><th>Location</th><th>Date</th><th>PM2.5</th><th>PM10</th><th>NO2</th><th>SO2</th><th>Water pH</th><th>Noise (dB)</th><th>Severity</th><th>Violation</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Station</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Date</th>
+                <th>PM2.5</th>
+                <th>PM10</th>
+                <th>NO2</th>
+                <th>SO2</th>
+                <th>Water pH</th>
+                <th>Noise (dB)</th>
+                <th>Severity</th>
+                <th>Violation</th>
+              </tr>
             </thead>
             <tbody id="user-pollution-body"></tbody>
           </table>
@@ -588,7 +682,14 @@ GROUP BY l.city;</code></pre>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Industry</th><th>Date</th><th>Inspector</th><th>Remarks</th><th>Result</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Industry</th>
+                <th>Date</th>
+                <th>Inspector</th>
+                <th>Remarks</th>
+                <th>Result</th>
+              </tr>
             </thead>
             <tbody id="user-inspections-body"></tbody>
           </table>
@@ -604,7 +705,15 @@ GROUP BY l.city;</code></pre>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Industry</th><th>Type</th><th>Penalty (₹)</th><th>Status</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Reading ID</th>
+                <th>Station ID</th>
+                <th>Industry</th>
+                <th>Type</th>
+                <th>Penalty (₹)</th>
+                <th>Status</th>
+              </tr>
             </thead>
             <tbody id="user-violations-body"></tbody>
           </table>
@@ -620,7 +729,14 @@ GROUP BY l.city;</code></pre>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Name</th><th>Type</th><th>License</th><th>Location</th><th>City</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>License</th>
+                <th>Location</th>
+                <th>City</th>
+              </tr>
             </thead>
             <tbody id="user-industries-body"></tbody>
           </table>
@@ -648,6 +764,5 @@ GROUP BY l.city;</code></pre>
 
   <script src="app.js"></script>
 </body>
+
 </html>
-
-
